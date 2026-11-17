@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 from datetime import datetime, timezone
 
-from .database import get_async_session, Base
+from .database import get_async_session, Base  # type: ignore
 
 app = FastAPI()
 
@@ -12,7 +12,7 @@ redis_client = Redis(host="redis", port=6379, db=0)
 
 
 @app.get("/health")
-async def health_check(session: AsyncSession = Depends(get_async_session)):
+async def health_check(session: AsyncSession = Depends(get_async_session)) -> dict[str, str]:
     db_ok = False
     try:
         result = await session.execute(text("SELECT 1"))
