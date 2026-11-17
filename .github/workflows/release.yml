@@ -1,0 +1,138 @@
+name: Create Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+    if: github.ref_starts_with('refs/tags/v')
+    needs: [ci]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Docker Images
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          docker build -t ${REGISTRY}/${IMAGE_NAME}/frontend:${GIT_SHA} ./frontend
+          docker push ${REGISTRY}/${IMAGE_NAME}/frontend:${GIT_SHA}
+          docker build -t ${REGISTRY}/${IMAGE_NAME}/backend:${GIT_SHA} ./backend
+          docker push ${REGISTRY}/${IMAGE_NAME}/backend:${GIT_SHA}
+          docker build -t ${REGISTRY}/${IMAGE_NAME}/sandbox-runner:${GIT_SHA} ./sandbox
+          docker push ${REGISTRY}/${IMAGE_NAME}/sandbox-runner:${GIT_SHA}
+          docker build -t ${REGISTRY}/${IMAGE_NAME}/migrations:${GIT_SHA} ./backend
+          docker push ${REGISTRY}/${IMAGE_NAME}/migrations:${GIT_SHA}
+
+      - name: Generate Release Artifacts
+        env:
+          GIT_SHA: ${{ github.sha }}
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        run: |-
+          import os
+          sha = os.environ.get('GIT_SHA', '')
+          registry = os.environ.get('REGISTRY', 'ghcr.io')
+          image_name = os.environ.get('IMAGE_NAME', '')
+
+          # Generate docker-compose.yml
+          with open('docker-compose.yml', 'w') as f:
+            f.write('services\\n')
+            f.write('  frontend\\n')
+            f.write('    image: ' + registry + '/' + image_name + '/frontend:' + sha + '\\n')
+            f.write('    ports\\n')
+            f.write('    - \\"3000:3000\\"\\n')
+            f.write('  backend\\n')
+            f.write('    image: ' + registry + '/' + image_name + '/backend:' + sha + '\\n')
+            f.write('    ports\\n')
+            f.write('    - \\"8000:8000\\"\\n')
+            f.write('  sandbox\\n')
+            f.write('    image: ' + registry + '/' + image_name + '/sandbox-runner:' + sha + '\\n')
+            f.write('  migrations\\n')
+            f.write('    image: ' + registry + '/' + image_name + '/migrations:' + sha + '\\n')
+
+          # Generate .env.example
+          with open('.env.example', 'w') as f:
+            f.write('DATABASE_URL=postgresql://postgres:test@localhost:5432/pyforge_test\\n')
+            f.write('REDIS_URL=redis://localhost:6379/0\\n')
+
+          # Generate init.sql
+          with open('init.sql', 'w') as f:
+            f.write('-- PyForge Database Initialization Script\\n')
+            f.write('-- Generated for release ' + sha + '\\n')
+            f.write('CREATE TABLE IF NOT EXISTS users (\\n')
+            f.write('    id SERIAL PRIMARY KEY,\\n')
+            f.write('    username VARCHAR(255) UNIQUE NOT NULL,\\n')
+            f.write('    email VARCHAR(255) UNIQUE NOT NULL,\\n')
+            f.write('    created_at TIMESTAMP DEFAULT NOW()\\n')
+            f.write(');\\n')
+
+          # Generate README-SELFHOSTED.md
+          with open('README-SELFHOSTED.md', 'w') as f:
+            f.write('# PyForge Self-Hosted\\n\\n')
+            f.write('## Quick Start\\n\\n')
+            f.write('\\`\\`\\`bash\\n')
+            f.write('docker compose up -d\\n')
+            f.write('\\`\\`\\`\\n\\n')
+            f.write('## Services\\n\\n')
+            f.write('- Frontend: http://localhost:3000\\n')
+            f.write('- Backend API: http://localhost:8000\\n')
+            f.write('- Sandbox Runner: Internal network\\n\\n')
+            f.write('## Images\\n\\n')
+            f.write('- Frontend: ' + registry + '/' + image_name + '/frontend:' + sha + '\\n')
+            f.write('- Backend: ' + registry + '/' + image_name + '/backend:' + sha + '\\n')
+            f.write('- Sandbox Runner: ' + registry + '/' + image_name + '/sandbox-runner:' + sha + '\\n')
+            f.write('- Migrations: ' + registry + '/' + image_name + '/migrations:' + sha + '\\n')
+
+      - name: Create GitHub Release
+        uses: softprops/gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: |
+            ## What's Changed
+
+            This release includes the PyForge application with all services containerized.
+
+            ## Artifacts
+
+            - Docker images pushed to GHCR
+            - docker-compose.yml with pinned image tags
+            - .env.example for configuration
+            - init.sql database schema
+            - README-SELFHOSTED.md for self-hosted deployment
+
+            ## Upgrading
+
+            \\`\\`\\`bash
+            docker compose pull && docker compose up -d
+            \\`\\`\\`
+
+          files: |
+            docker-compose.yml
+            .env.example
+            init.sql
+            README-SELFHOSTED.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

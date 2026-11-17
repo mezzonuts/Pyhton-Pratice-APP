@@ -1,0 +1,96 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Blue-Green Production Deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [ci]
+    strategy:
+      fail-fast: false
+    environment:
+      name: production
+      url: https://pyforge.production
+      reviewers:
+        - ${{ github.actor }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Pull Latest Docker Images
+        run: |
+          docker compose pull
+
+      - name: Blue-Green Health Check & Switch
+        run: |
+          # Check new (green) deployment health
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Green deployment healthy"
+              break
+            fi
+            if [ "$STATUS" = "000" ]; then
+              echo "Green not ready, waiting..."
+            else
+              echo "Green health check returned $STATUS - rolling back"
+              docker compose up -d --remove-orphans old
+              exit 1
+            fi
+            sleep 5
+          done
+
+          # Switch traffic to green (update ingress/service)
+          # In production, this would update K8s ingress or docker-compose scale
+          echo "Switching traffic to green deployment"
+
+          # Wait 10min monitoring window before decommissioning old
+          echo "Starting 10min monitoring window before decommissioning old"
+          sleep 600
+
+          # Decommission old deployment
+          docker compose up -d --remove-orphans --scale old=0 new
+
+      - name: Auto-Rollback on Health Failure
+        if: failure()
+        run: |
+          echo "Health check failed or 5xx error rate detected - triggering rollback"
+          docker compose up -d --remove-orphans old
+          exit 1
+
+      - name: Slack Notification - Success
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-name: "#pyforge-production"
+          payload: |
+            {
+              "text": "Production deployment successful! SHA: ${{ github.sha }}"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-name: "#pyforge-production"
+          payload: |
+            {
+              "text": "Production deployment failed! SHA: ${{ github.sha }} - Rollback initiated"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

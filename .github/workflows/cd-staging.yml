@@ -1,0 +1,88 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    needs: [ci]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull Docker Images
+        run: |
+          docker compose pull
+
+      - name: Run Alembic Migrations
+        working-directory: ./backend
+        run: |
+          pip install alembic
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/pyforge_test
+          REDIS_URL: redis://localhost:6379/0
+
+      - name: Health Check
+        timeout-minutes: 3
+        run: |
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed"
+              exit 0
+            fi
+            if [ "$STATUS" = "000" ]; then
+              echo "Service not ready, waiting..."
+            else
+              echo "Health check returned $STATUS"
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Health check timed out after 3 minutes"
+          exit 1
+
+      - name: Run E2E Smoke Tests
+        working-directory: ./frontend
+        run: |
+          pnpm exec playwright test --project=chromium --grep=smoke
+        env:
+          BASE_URL: http://localhost:3000
+          API_URL: http://localhost:8000
+
+      - name: Slack Notification - Success
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-name: "#pyforge-staging"
+          payload: |
+            {
+              "text": "Staging deployment successful! SHA: ${{ github.sha }}"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-name: "#pyforge-staging"
+          payload: |
+            {
+              "text": "Staging deployment failed! SHA: ${{ github.sha }} - Job: ${{ toJson(needs) }}"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
