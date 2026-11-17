@@ -1,5 +1,5 @@
 import './globals.css'
-import { TailwindProvider } from '@/components/ui/tailwind-provider'
+import { TailwindProvider } from '@/components/uI/tailwind-provider'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {

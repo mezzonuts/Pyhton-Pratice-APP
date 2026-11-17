@@ -7,7 +7,17 @@ name = "pyforge-backend"
 version = "0.1.0"
 description = "PyForge backend service"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "APScheduler",
+]
+
+[project.optional-dependencies]
+auth = [
+    "authjs[bcrypt]",
+]
 
 [tool.ruff]
 line-length = 100
