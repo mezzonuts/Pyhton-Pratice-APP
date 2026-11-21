@@ -23,3 +23,6 @@ dependencies = [
     "python-multipart",
     "APScheduler",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
