@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 
-from backend.app.ai.provider import (
+from app.ai.provider import (
     ProviderType,
     ProviderConfig,
     AIProviderManager,
     AIResponse,
 )
-from backend.app.ai.prompts import (
+from app.ai.prompts import (
     get_socratic_hint,
     generate_review_prompt,
     generate_problem_prompt,
@@ -148,7 +148,9 @@ async def get_socratic_hint(
 # ──────────────────────────────────────────────────────────────────────
 
 @router.post("/review", tags=["ai"], response_model=dict)
-async def_get_ai_review(
+
+
+async def _get_ai_review(
     request: dict,
     manager: AIProviderManager = Depends(get_ai_manager),
 ):
@@ -178,7 +180,7 @@ async def_get_ai_review(
 
     default_provider = manager.get_default_provider()
     try:
-        from backend.app.ai.provider import AIResponse
+        from app.ai.provider import AIResponse
         import aiohttp
 
         messages = [{"role": "user", "content": prompt}]

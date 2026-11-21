@@ -5,7 +5,7 @@ import os
 import shutil
 from typing import Dict, Any, List
 
-from backend.app.services.ruff_mypy_integration import run_ruff_check, run_mypy_strict
+from app.services.ruff_mypy_integration import run_ruff_check, run_mypy_strict
 
 
 class GraderResult:

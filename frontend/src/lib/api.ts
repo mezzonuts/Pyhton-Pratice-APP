@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores/use-user-store'
 const isDev = process.env.NEXT_PUBLIC_ENV === 'development'
 const BASE_URL = isDev
   ? 'http://localhost:8000'
-  : 'https://api.pyforge.app/v1'
+  : ''
 
 const COOKIE_NAME = 'access_token'
 

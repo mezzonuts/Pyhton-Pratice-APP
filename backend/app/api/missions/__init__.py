@@ -1,1 +1,1 @@
-from backend.app.api.missions.routes import router
+from app.api.missions.routes import router

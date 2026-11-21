@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from datetime import timedelta
 
-from backend.app.auth import (
+from app.auth import (
     create_access_token,
     decode_token,
     get_current_user,
@@ -13,9 +13,9 @@ from backend.app.auth import (
     oauth_github_url,
     verify_password,
 )
-from backend.app.database import AsyncSessionLocal
-from backend.app.models.user import User
-from backend.app.schemas.user import UserCreate, UserLogin, UserRead
+from app.database import AsyncSessionLocal
+from app.models.user import User
+from app.schemas.user import UserCreate, UserLogin, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

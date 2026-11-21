@@ -2,9 +2,9 @@ from datetime import date, datetime, timedelta
 from random import Random
 from typing import List, Optional, Set
 
-from backend.app.database import AsyncSessionLocal
-from backend.app.models.mission import MissionMode, MissionTemplate
-from backend.app.models.user_mission import (
+from app.database import AsyncSessionLocal
+from app.models.mission import MissionMode, MissionTemplate
+from app.models.user_mission import (
     MissionStatus,
     MissionGrade,
     UserMissionState,
@@ -121,7 +121,7 @@ class DailyMissionGenerator:
                     difficulty_type, tier=1
                 )
             else:
-                from backend.app.services.mission_seed import mission_repo as sr
+                from app.services.mission_seed import mission_repo as sr
                 missions = sr.get_by_difficulty_type(difficulty_type, tier=1)
 
             filtered = [
@@ -144,7 +144,7 @@ class DailyMissionGenerator:
     def _get_all_missions(self) -> List[MissionTemplate]:
         if self.mission_repo:
             return self.mission_repo.get_all_missions()
-        from backend.app.services.mission_seed import mission_repo as sr
+        from app.services.mission_seed import mission_repo as sr
         return sr.get_all_missions()
 
     async def _get_available_missions(
@@ -153,7 +153,7 @@ class DailyMissionGenerator:
         if self.mission_repo:
             all_missions = self.mission_repo.get_by_tier(user_state.tier)
         else:
-            from backend.app.services.mission_seed import mission_repo as sr
+            from app.services.mission_seed import mission_repo as sr
             all_missions = sr.get_by_tier(user_state.tier)
 
         # Filter: include Tier 1 missions when user.tier >= 1 OR user.elo_rating >= 1100
@@ -232,7 +232,7 @@ class DailyMissionGenerator:
         rng = Random(seed)
 
         if not candidates:
-            from backend.app.models.mission import MissionTemplate as MT
+            from app.models.mission import MissionTemplate as MT
 
             return MT(id=0, tier=0, mode=MissionMode.FIX_BUG)
 

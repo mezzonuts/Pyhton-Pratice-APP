@@ -7,9 +7,9 @@ from passlib.context import CryptContext
 
 import httpx
 
-from backend.app.database import AsyncSessionLocal
-from backend.models.user import User
-from backend.schemas.user import UserRead
+from app.database import AsyncSessionLocal
+from app.models.user import User
+from app.schemas.user import UserRead
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

@@ -5,11 +5,11 @@ from zoneinfo import ZoneInfo
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from backend.app.database import AsyncSessionLocal, engine, Base
-from backend.app.models.user import User
-from backend.app.models.mission import MissionTemplate, MissionMode
-from backend.app.models.user_mission import UserMissionState, MissionStatus, MissionGrade
-from backend.app.services.mission_service import DailyMissionGenerator, _get_unlocked_tags
+from app.database import AsyncSessionLocal, engine, Base
+from app.models.user import User
+from app.models.mission import MissionTemplate, MissionMode
+from app.models.user_mission import UserMissionState, MissionStatus, MissionGrade
+from app.services.mission_service import DailyMissionGenerator, _get_unlocked_tags
 
 from sqlalchemy import select, func, and_, or_
 

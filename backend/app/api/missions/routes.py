@@ -3,19 +3,19 @@ from random import Random
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.database import AsyncSessionLocal
-from backend.app.models.user import User
-from backend.app.models.mission import MissionTemplate, MissionMode
-from backend.app.models.user_mission import (
+from app.database import AsyncSessionLocal
+from app.models.user import User
+from app.models.mission import MissionTemplate, MissionMode
+from app.models.user_mission import (
     UserMissionState,
     MissionStatus,
     MissionGrade,
 )
-from backend.app.services.mission_service import (
+from app.services.mission_service import (
     DailyMissionGenerator,
     _get_unlocked_tags,
 )
-from backend.app.schemas.user import UserRead
+from app.schemas.user import UserRead
 
 router = APIRouter(prefix="/v1/missions", tags=["missions"])
 
@@ -83,7 +83,7 @@ async def get_tier1_missions(
     if mission_service.mission_repo:
         all_missions = mission_service.mission_repo.get_by_tier(1)
     else:
-        from backend.app.services.mission_seed import mission_repo as sr
+        from app.services.mission_seed import mission_repo as sr
         all_missions = sr.get_by_tier(1)
 
     # Filter for elo-appropriate missions

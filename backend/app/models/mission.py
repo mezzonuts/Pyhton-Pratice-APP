@@ -13,8 +13,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from backend.app.database import Base
-from backend.app.models.user import User
+from app.database import Base
+from app.models.user import User
 from enum import Enum
 import json
 
