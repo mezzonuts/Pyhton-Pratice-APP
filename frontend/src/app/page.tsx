@@ -15,37 +15,48 @@ export default function Dashboard() {
     longestStreak,
     freezeShields,
     xp,
-    progress,
     elo,
-    overallScore,
-    strongestDimension,
-    weakestDimension,
     skillRadar,
   } = useUserStore()
 
-  const { mission, loading, submitted, result } = useUserStore()
-
   return (
-    <main className="max-w-7xl mx-auto p-6 bg-background min-h-screen">
-      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 gap-6">
+    <main className="max-w-7xl mx-auto px-6 pb-12 space-y-6">
+      <HeaderBar
+        streak={streak}
+        longestStreak={longestStreak}
+        freezeShields={freezeShields}
+        xp={xp}
+        elo={elo}
+        skillRadar={skillRadar}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2">
-          <HeaderBar streak={streak} longestStreak={longestStreak} freezeShields={freezeShields} xp={xp} elo={elo} skillRadar={skillRadar} />
+          <DailyMissionCard />
         </div>
 
-        <div className="lg:col-span-2">
-          <div className="grid grid-cols-1 gap-6">
-            <div>
-              <DailyMissionCard />
-              <SkillRadarChart values={skillRadar} />
-            </div>
-
-            <div>
-              <MissionHistory />
-              <div className="mt-4"><div className="text-sm font-medium mb-1">XP Progress ({xp} XP)</div><Progress value={xp % 100} /></div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Skill Radar</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <SkillRadarChart values={skillRadar} />
+          </CardContent>
+        </Card>
       </div>
+
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <MissionHistory />
+          <div className="pt-2 border-t">
+            <div className="flex justify-between text-sm font-medium mb-2">
+              <span>XP Progress</span>
+              <span>{xp} XP</span>
+            </div>
+            <Progress value={xp % 100} />
+          </div>
+        </CardContent>
+      </Card>
     </main>
   )
 }
@@ -68,13 +79,11 @@ function HeaderBar({
   const tier = skillRadar ? Math.min(6, Math.max(0, TIER_INDEX[elo] ?? 0)) : 0
 
   return (
-    <div className="bg-card rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-card rounded-lg border p-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <Badge variant="default" className="text-sm">
-              {skillRadar?.logic > 0 ? 'U' : '?' }
-            </Badge>
+          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+            {skillRadar?.logic > 0 ? 'U' : 'P'}
           </div>
           <div>
             <h2 className="text-xl font-bold">PyForge Daily</h2>
@@ -88,22 +97,13 @@ function HeaderBar({
             <span className="text-xl font-bold">{streak}</span>
             <Badge variant="secondary">{longestStreak}+</Badge>
             {freezeShields > 0 && (
-              <Badge variant="default">
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M9 12l2 2 4-4m5.618-4.016a7.967 7.967 0 0 1-1.167 1.167l-2.082 2.082 1.538 1.538a7.966 7.966 0 0 1-1.108 1.107l-2.082 2.082-1.538 1.538m14.7 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                Freeze
-              </Badge>
+              <Badge variant="default">Freeze</Badge>
             )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <div className="text-sm text-muted-foreground">Streak</div>
           <div className="text-2xl font-bold">{streak} days</div>
@@ -113,14 +113,14 @@ function HeaderBar({
           <div className="text-2xl font-bold">{longestStreak}+ days</div>
         </div>
         <div>
-          <div className="text-sm text-muted-foreground">Progress</div>
-          <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
+          <div className="text-sm text-muted-foreground mb-1">Progress</div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full"
-              style={{ width: `${(xp % 100) / 100 * 100}%` }}
+              style={{ width: `${xp % 100}%` }}
             ></div>
           </div>
-          <div className="text-xs text-muted-foreground">{xp % 100}%</div>
+          <div className="text-xs text-muted-foreground mt-1">{xp % 100}%</div>
         </div>
       </div>
     </div>
