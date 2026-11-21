@@ -1,7 +1,6 @@
+'use client'
 // @ts-nocheck
-import * as monaco from 'monaco-editor'
-import { useEffect, useRef, useState } from 'react'
-import { useUserStore } from '@/stores/use-user-store'
+import { useEffect, useRef } from 'react'
 
 export const MonacoEditor: React.FC<{
   defaultValue?: string
@@ -10,44 +9,43 @@ export const MonacoEditor: React.FC<{
   width?: string
   readOnly?: boolean
   language?: string
-}> = ({ defaultValue, onChange, height = '100%', width = '100%', readOnly = false, language = 'python' }) => {
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+}> = ({
+  defaultValue = '',
+  onChange,
+  height = '300px',
+  width = '100%',
+  readOnly = false,
+  language = 'python',
+}) => {
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const editorRef = useRef<any>(null)
 
   useEffect(() => {
-    editorRef.current = monaco.editor.create(document.createElement('div'), {
-      value: defaultValue || '',
-      language,
-      theme: 'vs-dark',
-      automaticLayout: true,
-      minimap: {
-        enabled: true
-      },
-      readOnly
+    let disposed = false
+    let subscription: any = null
+
+    import('monaco-editor').then((monaco) => {
+      if (disposed || !containerRef.current) return
+      const editor = monaco.editor.create(containerRef.current, {
+        value: defaultValue,
+        language,
+        theme: 'vs-dark',
+        automaticLayout: true,
+        minimap: { enabled: true },
+        readOnly,
+      })
+      editorRef.current = editor
+      subscription = editor.onDidChangeModelContent(() => {
+        onChange?.(editor.getValue())
+      })
     })
-  }, [defaultValue, language, readOnly])
 
-  useEffect(() => {
-    if (!editorRef.current) return
-    const handleChange = (e: any) => {
-      onChange?.(editorRef.current.getValue())
-    }
-    editorRef.current.onDidChangeModelContent(handleChange)
     return () => {
-      editorRef.current.offDidChangeModelContent(handleChange)
+      disposed = true
+      subscription?.dispose?.()
+      editorRef.current?.dispose?.()
     }
-  }, [onChange])
+  }, [language, readOnly])
 
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.layout()
-    }
-  }, [height, width])
-
-  return (
-    <div
-      ref={editorRef}
-      style={{ height, width }}
-      className="monaco-editor"
-    />
-  )
+  return <div ref={containerRef} style={{ height, width }} className="monaco-editor" />
 }

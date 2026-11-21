@@ -20,6 +20,12 @@ export const DailyMissionCard: React.FC = () => {
   } | null>(null)
   const [runTests, setRunTests] = useState(false)
 
+  // Run lint on code change
+  useEffect(() => {
+    const result = clientSideLint(code)
+    setLintErrors(result.errors)
+  }, [code])
+
   if (loading) {
     return (
       <Card>
@@ -41,12 +47,6 @@ export const DailyMissionCard: React.FC = () => {
       </Card>
     )
   }
-
-  // Run lint on code change
-  useEffect(() => {
-    const result = clientSideLint(code)
-    setLintErrors(result.errors)
-  }, [code])
 
   return (
     <Card>

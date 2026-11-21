@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/stores/use-user-store'
 import { Table, TableHeader, TableRow, TableCell, Input, Button, Badge } from '@/components/uI'
-import { useNavigate } from 'react-router-dom'
 
 export const AiSettingsPage: React.FC = () => {
   const { aiProviders, setProviders, selectProvider, clearAIHistory } = useUserStore()
-  const navigate = useNavigate()
   const [baseUrl, setBaseUrl] = useState('')
   const [model, setModel] = useState('')
   const [apiKeyRef, setApiKeyRef] = useState('')
@@ -221,3 +219,5 @@ export const AiSettingsPage: React.FC = () => {
     </div>
   )
 }
+
+export default AiSettingsPage

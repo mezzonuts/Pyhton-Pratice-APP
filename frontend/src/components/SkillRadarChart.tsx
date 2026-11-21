@@ -28,7 +28,7 @@ export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ values, goals 
   const points = React.useMemo(() => {
     const plotPoints: number[] = []
     dimensionLabels.forEach((dim, i) => {
-      const value = Math.max(0, Math.min(dimensionMax, values[dim as SkillDimension] ?? 0))
+      const value = Math.max(0, Math.min(dimensionMax, values?.[dim as SkillDimension] ?? 0))
       const radius = (value / dimensionMax) * Math.min(radarWidth / 2, radarHeight / 2)
       const x = radarWidth / 2 + radius * Math.cos(angles[i])
       const y = radarHeight / 2 + radius * Math.sin(angles[i])

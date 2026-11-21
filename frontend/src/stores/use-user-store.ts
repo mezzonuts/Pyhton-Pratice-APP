@@ -1,5 +1,5 @@
 // @ts-nocheck
-import create from 'zustand'
+import { create } from 'zustand'
 
 export type UserStats = {
   streak: number
@@ -294,15 +294,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   get streak() {
     const { user } = get()
-    return user?.streak_days ?? get().streak
+    return user?.streak_days ?? 0
   },
   get xp() {
     const { user } = get()
-    return user?.total_xp ?? get().xp
+    return user?.total_xp ?? 0
   },
   get elo() {
     const { user } = get()
-    return user?.elo_rating ?? get().elo
+    return user?.elo_rating ?? 1000
   },
   get overallScore() {
     const { skillRadar } = get()
@@ -323,3 +323,4 @@ export const useUserStore = create<UserState>((set, get) => ({
     testing: 0,
     performance: 0,
   }
+}))

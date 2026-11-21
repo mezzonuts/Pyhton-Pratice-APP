@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import { useUserStore } from '@/stores/use-user-store'
 import { useMissionHook } from '@/lib/use-mission-hook'
 import { Modal, Button, Badge } from '@/components/uI'
-import { useNavigate } from 'react-router-dom'
 
 export const AiHintButton: React.FC = ({
   missionId,
@@ -11,7 +10,6 @@ export const AiHintButton: React.FC = ({
   showElI5 = false,
 }) => {
   const { addAIHistory, aiHistory } = useUserStore()
-  const navigate = useNavigate()
   const [visible, setVisible] = useState(false)
   const [hint, setHint] = useState('')
   const [hintType, setHintType] = useState<'conceptual' | 'analogy' | 'ELI5'>(
@@ -47,6 +45,7 @@ export const AiHintButton: React.FC = ({
   }, [missionId, userCode, hintType, addAIHistory])
 
   return (
+    <>
     <Button
       variant="secondary"
       size="sm"
@@ -114,12 +113,13 @@ export const AiHintButton: React.FC = ({
 
         <Button
           variant="primary"
-          onClose={() => setVisible(false)}
+          onClick={() => setVisible(false)}
           className="mt-4"
         >
           Got it
         </Button>
       </Modal>
     )}
+    </>
   )
 }

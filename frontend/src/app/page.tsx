@@ -1,3 +1,5 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/uI/card'
 import { Progress } from '@/components/uI/progress'
 import { Badge } from '@/components/uI/badge'
@@ -27,19 +29,19 @@ export default function Dashboard() {
     <main className="max-w-7xl mx-auto p-6 bg-background min-h-screen">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="lg:col-span-2">
-          <HeaderBar streak={streak} longestStreak={longestStreak} freezeShields={freezeShields} xp={xp} elo={elo} />
+          <HeaderBar streak={streak} longestStreak={longestStreak} freezeShields={freezeShields} xp={xp} elo={elo} skillRadar={skillRadar} />
         </div>
 
         <div className="lg:col-span-2">
           <div className="grid grid-cols-1 gap-6">
             <div>
-              <TodayMissionCard />
+              <DailyMissionCard />
               <SkillRadarChart values={skillRadar} />
             </div>
 
             <div>
               <MissionHistory />
-              <XPProgress value={xp} max={100} progress={progress} />
+              <div className="mt-4"><div className="text-sm font-medium mb-1">XP Progress ({xp} XP)</div><Progress value={xp % 100} /></div>
             </div>
           </div>
         </div>
@@ -54,12 +56,14 @@ function HeaderBar({
   freezeShields,
   xp,
   elo,
+  skillRadar,
 }: {
   streak: number
   longestStreak: number
   freezeShields: number
   xp: number
   elo: number
+  skillRadar?: any
 }) {
   const tier = skillRadar ? Math.min(6, Math.max(0, TIER_INDEX[elo] ?? 0)) : 0
 

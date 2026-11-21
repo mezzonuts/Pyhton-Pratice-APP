@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import { useUserStore } from '@/stores/use-user-store'
 import { MonacoEditor } from '@/components/MonacoEditor'
 import { Modal, Button, Badge } from '@/components/uI'
-import { useNavigate } from 'react-router-dom'
 
 interface ReviewData {
   review: string
@@ -20,7 +19,6 @@ export const AiReviewPanel: React.FC = ({
   grade: string
 }) => {
   const { addAIHistory, aiHistory } = useUserStore()
-  const navigate = useNavigate()
   const [visible, setVisible] = useState(false)
   const [review, setReview] = useState('')
   const [improvedCode, setImprovedCode] = useState('')
@@ -63,6 +61,7 @@ export const AiReviewPanel: React.FC = ({
   }, [missionId, gradedCode, grade, addAIHistory])
 
   return (
+    <>
     <Button
       variant="secondary"
       size="sm"
@@ -110,7 +109,7 @@ export const AiReviewPanel: React.FC = ({
 
             <Button
               variant="primary"
-              onClose={() => setVisible(false)}
+          onClick={() => setVisible(false)}
               className="mt-4"
             >
               Close
@@ -119,5 +118,6 @@ export const AiReviewPanel: React.FC = ({
         )}
       </Modal>
     )}
+    </>
   )
 }
