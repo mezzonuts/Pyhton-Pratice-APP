@@ -148,8 +148,6 @@ async def get_socratic_hint(
 # ──────────────────────────────────────────────────────────────────────
 
 @router.post("/review", tags=["ai"], response_model=dict)
-
-
 async def _get_ai_review(
     request: dict,
     manager: AIProviderManager = Depends(get_ai_manager),
@@ -166,7 +164,7 @@ async def _get_ai_review(
     if not code.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail "No code provided",
+            detail="No code provided",
         )
 
     prompt = generate_review_prompt(code, grader_result)
@@ -219,7 +217,7 @@ async def _get_ai_review(
 # ──────────────────────────────────────────────────────────────────────
 
 @router.post("/generate-problem", tags=["ai"], response_model=dict)
-async def_generate_problem(
+async def _generate_problem(
     request: dict,
     manager: AIProviderManager = Depends(get_ai_manager),
 ):
