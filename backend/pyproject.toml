@@ -23,8 +23,3 @@ dependencies = [
     "python-multipart",
     "APScheduler",
 ]
-
-[project.optional-dependencies]
-auth = [
-    "authjs[bcrypt]",
-]
