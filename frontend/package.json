@@ -15,8 +15,7 @@
     "test:run:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --project=chromium --grep=smoke",
-    "playwright:install": "playwright install",
-    "postinstall": "prisma generate"
+    "playwright:install": "playwright install"
   },
   "dependencies": {
     "@authjs/react": "1.0.67-alpha.0",
